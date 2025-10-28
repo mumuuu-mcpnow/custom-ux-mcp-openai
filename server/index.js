@@ -7,6 +7,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import ngrok from "@ngrok/ngrok";
+import cors from "cors";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -138,12 +139,13 @@ async function main() {
 
   const app = express();
   app.use(express.json({ limit: "5mb" }));
+  app.use(cors());
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
 
-  app.post("/mcp", async (req, res) => {
+  const handler = async (req, res) => {
     const transport = new StreamableHTTPServerTransport({
       enableJsonResponse: true,
     });
@@ -163,7 +165,9 @@ async function main() {
         res.status(500).json({ error: "Internal MCP server error" });
       }
     }
-  });
+  }
+  app.get("/mcp", handler);
+  app.post("/mcp", handler);
 
   const port = Number.parseInt(process.env.PORT ?? "10086", 10);
 
@@ -209,4 +213,8 @@ async function main() {
 main().catch((error) => {
   console.error("Failed to start MCP server", error);
   process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });

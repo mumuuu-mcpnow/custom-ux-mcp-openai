@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:web": "esbuild web/src/component.tsx --bundle --format=esm --platform=browser --jsx=automatic --minify --outfile=dist/component.js",
+    "build:web": "node build.js",
     "typecheck": "tsc --noEmit -p web/tsconfig.json",
     "start:run": "npm run build:web && node server/index.js",
     "start": "npm run start:run",
@@ -14,9 +14,10 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
     "@ngrok/ngrok": "^1.5.2",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19",
+    "react-dom": "^19",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -25,5 +26,9 @@
     "esbuild": "^0.25.11",
     "nodemon": "^3.1.9",
     "typescript": "^5.9.3"
+  },
+  "resolutions": {
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2"
   }
 }

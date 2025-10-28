@@ -1,46 +1,30 @@
-import { StrictMode, useMemo, useState } from "react";
+import { StrictMode, use, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-
-type ToolOutput = {
-  structuredContent?: Record<string, unknown>;
-};
-
-type OpenAiHost = {
-  toolOutput?: ToolOutput;
-  sendFollowUpMessage?: (options: { prompt: string }) => Promise<void>;
-  theme?: "light" | "dark";
-};
-
-declare global {
-  interface Window {
-    openai?: OpenAiHost;
-  }
-}
+import { useCortexGlobalAction, useCortexGlobalState } from "@cortex-app/sdk-widget-sandbox/hooks";
 
 const rootElement = document.getElementById("hello-root");
 
 if (!rootElement) {
-  throw new Error("Missing mount node with id \"hello-root\"");
+  throw new Error('Missing mount node with id "hello-root"');
 }
-
-// window.onmessage = (event) => {
-//   console.log('data', event)
-// }
 
 window.parent.onmessage = (event) => {
   console.log("Received message from parent:", event);
-}
+};
 function App() {
-  console.log("rendering custom UX component");
   const [status, setStatus] = useState<string | null>(null);
   const [message, setMessage] = useState("Thanks for the hello world demo!");
+  const theme = useCortexGlobalState("theme");
+  const sendFollowUpMessage = useCortexGlobalAction("sendFollowUpMessage")
+  const callTool = useCortexGlobalAction("callTool");
+  const toolOutput = useCortexGlobalState("toolOutput");
 
   const structuredContent = useMemo(() => {
     return (
-      (window.openai?.toolOutput?.structuredContent as Record<string, unknown>) ??
+      (toolOutput?.structuredContent as Record<string, unknown>) ??
       {}
     );
-  }, []);
+  }, [toolOutput]);
 
   const greeting =
     (structuredContent.greeting as string | undefined) ??
@@ -57,7 +41,11 @@ function App() {
       return;
     }
 
-    if (!window.openai?.sendFollowUpMessage) {
+    if(window.openai.widgetState) {
+      console.log(window.openai.widgetState.sessionId)
+    }
+
+    if (!window.openai.sendFollowUpMessage) {
       setStatus("Host does not support follow-up messages yet.");
       return;
     }
@@ -75,19 +63,28 @@ function App() {
     }
   };
 
+  const handleCallTool = async () => {
+    const result = await callTool("testaaa", { foo: "bar" });
+    console.log("sandbox widget call tool get result:", result);
+  };
+
   return (
     <main
       style={{
-        fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-        padding: "1.5rem",
+        fontFamily:
+          "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        padding: "0",
+        margin: "0",
         backgroundColor: "#f8fafc",
         borderRadius: "12px",
         boxShadow: "0 8px 24px rgba(15, 23, 42, 0.12)",
       }}
     >
-      <h1 style={{ fontSize: "1.8rem", marginBottom: "0.5rem", color: "#0f172a" }}>
+      <h1
+        style={{ fontSize: "1.8rem", marginBottom: "0.5rem", color: "#0f172a" }}
+      >
         {greeting}
-        current theme: {window.openai?.theme}
+        current theme: {theme}
       </h1>
       <p style={{ marginBottom: "1rem", color: "#334155" }}>{instructions}</p>
 
@@ -98,7 +95,8 @@ function App() {
           color: "white",
           borderRadius: "8px",
           marginBottom: "1rem",
-          fontFamily: "ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+          fontFamily:
+            "ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
           fontSize: "0.85rem",
           lineHeight: 1.5,
           whiteSpace: "pre-wrap",
@@ -136,6 +134,23 @@ function App() {
 
       <button
         type="button"
+        style={{
+          padding: "0.75rem 1rem",
+          borderRadius: "8px",
+          border: "none",
+          backgroundColor: "#8aafffff",
+          color: "white",
+          fontWeight: 600,
+          cursor: "pointer",
+          transition: "background-color 0.2s ease",
+        }}
+        onClick={handleCallTool}
+      >
+        Trigger ToolCall
+      </button>
+
+      <button
+        type="button"
         onClick={handleSendFollowUp}
         style={{
           padding: "0.75rem 1rem",
@@ -160,9 +175,7 @@ function App() {
       </button>
 
       {status && (
-        <p style={{ marginTop: "0.75rem", color: "#0f172a" }}>
-          {status}
-        </p>
+        <p style={{ marginTop: "0.75rem", color: "#0f172a" }}>{status}</p>
       )}
     </main>
   );
