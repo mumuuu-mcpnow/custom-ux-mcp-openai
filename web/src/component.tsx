@@ -1,6 +1,6 @@
 import { StrictMode, use, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { useCortexGlobalAction, useCortexGlobalState } from "@cortex-app/sdk-widget-sandbox/hooks";
+import { useCortexGlobalAction, useCortexGlobalState, useWidgetState } from "@cortex-app/sdk-widget-sandbox";
 
 const rootElement = document.getElementById("hello-root");
 
@@ -16,6 +16,7 @@ function App() {
   const [message, setMessage] = useState("Thanks for the hello world demo!");
   const theme = useCortexGlobalState("theme");
   const sendFollowUpMessage = useCortexGlobalAction("sendFollowUpMessage")
+  const [widgetState, setWidgetState] = useWidgetState({ sessionId: "0" })
   const callTool = useCortexGlobalAction("callTool");
   const toolOutput = useCortexGlobalState("toolOutput");
 
@@ -106,6 +107,8 @@ function App() {
         {JSON.stringify(structuredContent, null, 2)}
       </section>
 
+      {JSON.stringify(widgetState)}
+
       <label
         htmlFor="followup-message"
         style={{
@@ -131,6 +134,25 @@ function App() {
           fontSize: "1rem",
         }}
       />
+
+      <button
+        type="button"
+        style={{
+          padding: "0.75rem 1rem",
+          borderRadius: "8px",
+          border: "none",
+          backgroundColor: "#8aafffff",
+          color: "white",
+          fontWeight: 600,
+          cursor: "pointer",
+          transition: "background-color 0.2s ease",
+        }}
+        onClick={() => {
+          setWidgetState((prev) => ({ sessionId: prev.sessionId + '1' }));
+        }}
+      >
+        Change Metadata
+      </button>
 
       <button
         type="button"

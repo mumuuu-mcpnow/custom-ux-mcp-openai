@@ -1,1 +1,29 @@
-.cortex-sandbox-iframe{border:none;border-radius:12px;width:100%}.cortex-sandbox-iframe__inner{width:100%;height:100%;border:none}
+/* ../cortex-app/packages/sdk-widget-sandbox/src/host/cortex-sandbox.css */
+.cortex-sandbox-iframe {
+  border: none;
+  border-radius: 12px;
+  width: 100%;
+}
+.cortex-sandbox-iframe--inline {
+  height: var(--iframe-height);
+}
+.cortex-sandbox-iframe--pip {
+  height: var(--iframe-height);
+  width: var(--iframe-width);
+}
+.cortex-sandbox-iframe--fullscreen {
+  height: var(--iframe-height);
+  width: var(--iframe-height);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 9999;
+}
+
+/* ../cortex-app/packages/sdk-widget-sandbox/src/sandbox/sandbox.css */
+.cortex-sandbox-iframe__inner {
+  width: 100%;
+  height: var(--iframe-height);
+  width: var(--iframe-width);
+  border: none;
+}
